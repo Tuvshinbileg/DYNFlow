@@ -11,6 +11,7 @@ import { DataTable } from "./nocodb/data-table";
 import { TablePagination } from "./nocodb/table-pagination";
 import { RecordFormDialog } from "./nocodb/record-form-dialog";
 import { DeleteConfirmationDialog } from "./nocodb/delete-confirmation-dialog";
+import { Card } from "./ui/card";
 
 interface NocoDBTableViewProps {
   tableName: string;
@@ -163,11 +164,14 @@ export function NocoDBTableView({
   };
 
   return (
+      <Card>
     <div className="space-y-4">
+
       <TableToolbar
         onAdd={handleAdd}
         onRefresh={handleRefresh}
         totalRows={totalRows}
+        tableName={tableName}
       />
 
       <DataTable
@@ -180,6 +184,8 @@ export function NocoDBTableView({
       <TablePagination
         currentPage={currentPage}
         totalPages={totalPages}
+        totalRows={totalRows}
+        pageSize={pageSize}
         onPageChange={handlePageChange}
       />
 
@@ -219,5 +225,7 @@ export function NocoDBTableView({
         isLoading={isLoading}
       />
     </div>
+    
+      </Card>
   );
 }
