@@ -3,13 +3,14 @@ import { contentTypesApi } from '@/lib/api';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { FileText, Plus } from 'lucide-react';
+import type { ContentTypeListItem } from '@/lib/types';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 export default async function HomePage() {
-  let contentTypes = [];
-  let error = null;
+  let contentTypes: ContentTypeListItem[] = [];
+  let error: string | null = null;
 
   try {
     contentTypes = await contentTypesApi.getAll();
@@ -19,14 +20,12 @@ export default async function HomePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
-      <div className="container mx-auto py-12 px-4">
-        <div className="mb-12 text-center">
-          <h1 className="text-5xl font-bold mb-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-            🚀 Dynamic Form System
-          </h1>
-          <p className="text-xl text-muted-foreground">
-            Strapi-style Content Management with Next.js 14 & Django
+    <div className="bg-linear-to-br ">
+      <div className="container mx-auto py-8 px-4">
+        <div className="mb-8">
+          <h2 className="text-2xl font-bold mb-2">Content Types</h2>
+          <p className="text-muted-foreground">
+            Manage your dynamic content types
           </p>
         </div>
 

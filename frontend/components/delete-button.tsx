@@ -4,8 +4,17 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Trash2, Loader2 } from 'lucide-react';
 import { contentApi, handleApiError } from '@/lib/api';
-import { useToast } from '@/components/ui/use-toast';
+import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 
 interface DeleteButtonProps {
   contentTypeName: string;
@@ -13,26 +22,20 @@ interface DeleteButtonProps {
 }
 
 export function DeleteButton({ contentTypeName, contentId }: DeleteButtonProps) {
+  const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { toast } = useToast();
   const router = useRouter();
 
   const handleDelete = async () => {
-    if (!confirm('Are you sure you want to delete this content?')) {
-      return;
-    }
-
     setLoading(true);
 
     try {
       await contentApi.delete(contentTypeName, contentId);
       
-      toast({
-        title: "Success",
-        description: "Content deleted successfully",
-      });
+      toast.success("Content deleted successfully");
 
       // Refresh the page to show updated list
+      setOpen(false);
       router.refresh();
     } catch (error) {
       const apiError = handleApiError(error);
@@ -40,31 +43,56 @@ export function DeleteButton({ contentTypeName, contentId }: DeleteButtonProps) 
         ? apiError.error 
         : JSON.stringify(apiError.error);
 
-      toast({
-        title: "Error",
-        description: errorMessage,
-        variant: "destructive",
-      });
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <Button 
-      variant="destructive" 
-      size="sm"
-      onClick={handleDelete}
-      disabled={loading}
-    >
-      {loading ? (
-        <Loader2 className="h-4 w-4 animate-spin" />
-      ) : (
-        <>
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="destructive" size="sm">
           <Trash2 className="h-4 w-4 mr-2" />
           Delete
-        </>
-      )}
-    </Button>
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Delete Content</DialogTitle>
+          <DialogDescription>
+            Are you sure you want to delete this content? This action cannot be undone.
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter>
+          <Button 
+            type="button" 
+            variant="outline" 
+            onClick={() => setOpen(false)}
+            disabled={loading}
+          >
+            Cancel
+          </Button>
+          <Button 
+            type="button"
+            variant="destructive"
+            onClick={handleDelete}
+            disabled={loading}
+          >
+            {loading ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Deleting...
+              </>
+            ) : (
+              <>
+                <Trash2 className="h-4 w-4 mr-2" />
+                Delete
+              </>
+            )}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

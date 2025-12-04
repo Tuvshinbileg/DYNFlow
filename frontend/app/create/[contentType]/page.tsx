@@ -10,17 +10,19 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 interface CreatePageProps {
-  params: {
+  params: Promise<{
     contentType: string;
-  };
+  }>;
 }
 
 export default async function CreatePage({ params }: CreatePageProps) {
+  const resolvedParams = await params;
   let contentType;
 
   try {
-    contentType = await contentTypesApi.getByIdOrName(params.contentType);
-  } catch (error) {
+    contentType = await contentTypesApi.getByIdOrName(resolvedParams.contentType);
+  } catch {
+    // Handle error silently and redirect to 404
     notFound();
   }
 
@@ -29,7 +31,7 @@ export default async function CreatePage({ params }: CreatePageProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+    <div className="min-h-screen bg-linear-to-br">
       <div className="container mx-auto py-12 px-4 max-w-3xl">
         <div className="mb-8">
           <Button asChild variant="ghost" className="mb-4">
@@ -97,9 +99,6 @@ export default async function CreatePage({ params }: CreatePageProps) {
             </p>
             <p>
               <strong>Fields:</strong> {contentType.fields.length}
-            </p>
-            <p>
-              <strong>Active:</strong> {contentType.is_active ? '✅ Yes' : '❌ No'}
             </p>
           </div>
         </div>

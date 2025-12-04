@@ -1,12 +1,11 @@
 "use client"
 
 import React, { useState } from 'react';
-import type { FormField, ContentType, FormData } from '@/lib/types';
+import type { FormData, ContentTypeResponse } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Switch } from '@/components/ui/switch';
 import {
   Select,
@@ -15,22 +14,22 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { DatePicker } from '@/components/ui/date-picker';
 import { contentApi, handleApiError } from '@/lib/api';
-import { useToast } from '@/components/ui/use-toast';
+import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
 
 interface DynamicFormProps {
-  contentType: ContentType;
+  contentType: ContentTypeResponse;
   onSuccess?: () => void;
 }
 
 export function DynamicForm({ contentType, onSuccess }: DynamicFormProps) {
   const [formData, setFormData] = useState<FormData>({});
   const [loading, setLoading] = useState(false);
-  const { toast } = useToast();
 
-  const handleChange = (fieldName: string, value: any) => {
-    setFormData(prev => ({
+  const handleChange = (fieldName: string, value: unknown) => {
+    setFormData((prev: FormData) => ({
       ...prev,
       [fieldName]: value
     }));
@@ -41,12 +40,9 @@ export function DynamicForm({ contentType, onSuccess }: DynamicFormProps) {
     setLoading(true);
 
     try {
-      const response = await contentApi.create(contentType.name, formData);
+      await contentApi.create(contentType.name, formData);
       
-      toast({
-        title: "Success!",
-        description: `${contentType.display_name} created successfully`,
-      });
+      toast.success(`${contentType.display_name} created successfully`);
 
       // Reset form
       setFormData({});
@@ -64,17 +60,13 @@ export function DynamicForm({ contentType, onSuccess }: DynamicFormProps) {
         ? apiError.error 
         : JSON.stringify(apiError.error);
 
-      toast({
-        title: "Error",
-        description: errorMessage,
-        variant: "destructive",
-      });
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
   };
 
-  const renderField = (field: FormField) => {
+  const renderField = (field: typeof contentType.fields[0]) => {
     const { field_name, display_name, field_type, is_required, help_text, choices, default_value } = field;
     const value = formData[field_name] ?? default_value ?? '';
 
@@ -95,7 +87,7 @@ export function DynamicForm({ contentType, onSuccess }: DynamicFormProps) {
             <Textarea
               {...commonProps}
               placeholder={`Enter ${display_name.toLowerCase()}`}
-              value={value}
+              value={value as string}
               onChange={(e) => handleChange(field_name, e.target.value)}
               className="min-h-[100px]"
             />
@@ -116,7 +108,7 @@ export function DynamicForm({ contentType, onSuccess }: DynamicFormProps) {
               {...commonProps}
               type="number"
               placeholder={`Enter ${display_name.toLowerCase()}`}
-              value={value}
+              value={value as string | number}
               onChange={(e) => handleChange(field_name, e.target.value)}
             />
             {help_text && (
@@ -136,7 +128,7 @@ export function DynamicForm({ contentType, onSuccess }: DynamicFormProps) {
               {...commonProps}
               type="email"
               placeholder={`Enter ${display_name.toLowerCase()}`}
-              value={value}
+              value={value as string}
               onChange={(e) => handleChange(field_name, e.target.value)}
             />
             {help_text && (
@@ -152,11 +144,10 @@ export function DynamicForm({ contentType, onSuccess }: DynamicFormProps) {
               {display_name}
               {is_required && <span className="text-destructive ml-1">*</span>}
             </Label>
-            <Input
-              {...commonProps}
-              type="date"
-              value={value}
-              onChange={(e) => handleChange(field_name, e.target.value)}
+            <DatePicker
+              value={value as string}
+              onChange={(dateValue) => handleChange(field_name, dateValue)}
+              placeholder={`Select ${display_name.toLowerCase()}`}
             />
             {help_text && (
               <p className="text-sm text-muted-foreground">{help_text}</p>
@@ -192,16 +183,16 @@ export function DynamicForm({ contentType, onSuccess }: DynamicFormProps) {
               {is_required && <span className="text-destructive ml-1">*</span>}
             </Label>
             <Select
-              value={value}
+              value={String(value)}
               onValueChange={(val) => handleChange(field_name, val)}
             >
               <SelectTrigger>
                 <SelectValue placeholder={`Select ${display_name.toLowerCase()}`} />
               </SelectTrigger>
               <SelectContent>
-                {choices?.map((choice) => (
-                  <SelectItem key={choice} value={choice}>
-                    {choice}
+                {choices?.map((choice: { value: string; option: string }) => (
+                  <SelectItem key={choice.value} value={choice.value}>
+                    {choice.option}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -223,7 +214,7 @@ export function DynamicForm({ contentType, onSuccess }: DynamicFormProps) {
               {...commonProps}
               type="text"
               placeholder={`Enter ${display_name.toLowerCase()}`}
-              value={value}
+              value={value as string}
               onChange={(e) => handleChange(field_name, e.target.value)}
             />
             {help_text && (
@@ -234,7 +225,7 @@ export function DynamicForm({ contentType, onSuccess }: DynamicFormProps) {
     }
   };
 
-  const sortedFields = [...contentType.fields].sort((a, b) => a.order - b.order);
+  const sortedFields = [...contentType.fields];
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
