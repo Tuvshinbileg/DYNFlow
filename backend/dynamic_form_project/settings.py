@@ -29,7 +29,6 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'content_types_app',
-    'dynamic_content_app',
 ]
 
 MIDDLEWARE = [
@@ -71,30 +70,6 @@ DATABASES = {
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
-
-# DATABASES = {
-#   "default": django_mongodb_backend.parse_uri(config('MONGO_DB_URL')),
-# }
-
-
-# MongoDB Configuration
-# Supports both connection URL and individual parameters
-# Connection URL takes precedence if provided
-MONGODB_CONNECTION_URL = config('MONGODB_URL', default=None)
-
-if MONGODB_CONNECTION_URL:
-    # Use connection URL (e.g., mongodb://user:pass@host:port/db or mongodb+srv://...)
-    MONGODB_SETTINGS = {
-        'host': MONGODB_CONNECTION_URL,
-    }
-else:
-    # Use individual parameters
-    MONGODB_SETTINGS = {
-        'db': config('MONGODB_NAME', default='dynamic_form_db'),
-        'host': config('MONGODB_HOST', default='localhost'),
-        'port': config('MONGODB_PORT', default=27017, cast=int),
-    }
-
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
