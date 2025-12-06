@@ -4,14 +4,8 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  Home,
-  FileText,
-  Settings,
   Database,
-  ExternalLink,
   ChevronDown,
-  Plus,
-  Eye,
   Table as TableIcon,
 } from "lucide-react";
 import {
@@ -34,45 +28,12 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { contentTypesApi } from "@/lib/api";
-import type { ContentTypeListItem } from "@/lib/types";
 import { nocodbService, type NocoDBTable } from "@/lib/nocodb";
-
-const externalLinks = [
-  {
-    title: "Django Admin",
-    url: "http://localhost:8000/admin/",
-    icon: Settings,
-  },
-  {
-    title: "API Docs",
-    url: "http://localhost:8000/api/content-types/",
-    icon: Database,
-  },
-];
 
 export function AppSidebar() {
   const pathname = usePathname();
-  const [contentTypes, setContentTypes] = useState<ContentTypeListItem[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [nocodbTables, setNocodbTables] = useState<NocoDBTable[]>([]);
   const [nocodbLoading, setNocodbLoading] = useState(true);
-  const [nocodbBaseId, setNocodbBaseId] = useState<string>("");
-
-  useEffect(() => {
-    const fetchContentTypes = async () => {
-      try {
-        const data = await contentTypesApi.getAll();
-        setContentTypes(data);
-      } catch (error) {
-        console.error("Failed to fetch content types:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchContentTypes();
-  }, []);
 
   useEffect(() => {
     const fetchNocodbData = async () => {
@@ -81,7 +42,6 @@ export function AppSidebar() {
         const bases = await nocodbService.getBases();
         if (bases.length > 0 && bases[0].id) {
           const baseId = bases[0].id;
-          setNocodbBaseId(baseId);
           
           // Then get tables for the first base
           const tables = await nocodbService.getTables(baseId);
@@ -127,102 +87,9 @@ export function AppSidebar() {
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Navigation</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={pathname === "/"}>
-                  <Link href="/">
-                    <Home className="h-4 w-4" />
-                    <span>Home</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              
-              <Collapsible defaultOpen className="group/collapsible">
-                <SidebarMenuItem>
-                  <CollapsibleTrigger asChild>
-                    <SidebarMenuButton>
-                      <FileText className="h-4 w-4" />
-                      <span>Content Types</span>
-                      <ChevronDown className="ml-auto h-4 w-4 transition-transform group-data-[state=open]/collapsible:rotate-180" />
-                    </SidebarMenuButton>
-                  </CollapsibleTrigger>
-                  <CollapsibleContent>
-                    <SidebarMenuSub>
-                      {isLoading ? (
-                        <SidebarMenuSubItem>
-                          <SidebarMenuSubButton>
-                            <span className="text-muted-foreground">Loading...</span>
-                          </SidebarMenuSubButton>
-                        </SidebarMenuSubItem>
-                      ) : contentTypes.length === 0 ? (
-                        <SidebarMenuSubItem>
-                          <SidebarMenuSubButton>
-                            <span className="text-muted-foreground">No content types</span>
-                          </SidebarMenuSubButton>
-                        </SidebarMenuSubItem>
-                      ) : (
-                        contentTypes.map((contentType) => (
-                          <Collapsible key={contentType.id} className="group/item">
-                            <SidebarMenuSubItem>
-                              <CollapsibleTrigger asChild>
-                                <SidebarMenuSubButton>
-                                  <FileText className="h-3 w-3" />
-                                  <span>{contentType.display_name}</span>
-                                  <ChevronDown className="ml-auto h-3 w-3 transition-transform group-data-[state=open]/item:rotate-180" />
-                                </SidebarMenuSubButton>
-                              </CollapsibleTrigger>
-                              <CollapsibleContent>
-                                <SidebarMenuSub>
-                                  <SidebarMenuSubItem>
-                                    <SidebarMenuSubButton
-                                      asChild
-                                      isActive={pathname === `/create/${contentType.name}`}
-                                    >
-                                      <Link href={`/create/${contentType.name}`}>
-                                        <Plus className="h-3 w-3" />
-                                        <span>Create</span>
-                                      </Link>
-                                    </SidebarMenuSubButton>
-                                  </SidebarMenuSubItem>
-                                  <SidebarMenuSubItem>
-                                    <SidebarMenuSubButton
-                                      asChild
-                                      isActive={pathname === `/view/${contentType.name}`}
-                                    >
-                                      <Link href={`/view/${contentType.name}`}>
-                                        <Eye className="h-3 w-3" />
-                                        <span>View All</span>
-                                      </Link>
-                                    </SidebarMenuSubButton>
-                                  </SidebarMenuSubItem>
-                                </SidebarMenuSub>
-                              </CollapsibleContent>
-                            </SidebarMenuSubItem>
-                          </Collapsible>
-                        ))
-                      )}
-                    </SidebarMenuSub>
-                  </CollapsibleContent>
-                </SidebarMenuItem>
-              </Collapsible>
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-        <SidebarGroup>
           <SidebarGroupLabel>NocoDB</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={pathname === "/nocodb"}>
-                  <Link href="/nocodb">
-                    <TableIcon className="h-4 w-4" />
-                    <span>All Tables</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              
               <Collapsible defaultOpen className="group/nocodb">
                 <SidebarMenuItem>
                   <CollapsibleTrigger asChild>
@@ -270,28 +137,6 @@ export function AppSidebar() {
                   </CollapsibleContent>
                 </SidebarMenuItem>
               </Collapsible>
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-        <SidebarGroup>
-          <SidebarGroupLabel>External Links</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {externalLinks.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <a
-                      href={item.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      <item.icon className="h-4 w-4" />
-                      <span>{item.title}</span>
-                      <ExternalLink className="ml-auto h-3 w-3" />
-                    </a>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
