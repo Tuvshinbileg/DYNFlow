@@ -81,17 +81,30 @@ class ContentTypeSyncNocoView(APIView):
     def post(self, request):
         """Trigger sync with NocoDB"""
         from noco import nocoapi
+        import traceback
 
         try:
+            logger.info("Starting NocoDB tables sync")
             nocodb_tables = nocoapi.get_nocodb_tables()
+            
+            if not nocodb_tables or 'error' in nocodb_tables:
+                error_msg = nocodb_tables.get('error', 'Failed to fetch NocoDB tables') if isinstance(nocodb_tables, dict) else str(nocodb_tables)
+                logger.error(f"NocoDB API Error: {error_msg}")
+                return Response(
+                    {'error': f'NocoDB API Error: {error_msg}'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
             nocodb_tables_sync(nocodb_tables)
-            logger.info("NocoDB tables synced")
+
+            logger.info("NocoDB tables synced successfully")
             return Response(
                 {'message': 'Content types synced with NocoDB successfully'},
                 status=status.HTTP_200_OK
             )
         except Exception as e:
-            logger.error(e)
+            error_trace = traceback.format_exc()
+            logger.error(f"Error syncing NocoDB: {str(e)}\n{error_trace}")
             return Response(
                 {'error': str(e)},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
