@@ -9,14 +9,12 @@ import os
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
 # Quick-start development settings - unsuitable for production
 SECRET_KEY = config('SECRET_KEY', default='django-insecure-dev-key-change-in-production')
 
 DEBUG = config('DEBUG', default=True, cast=bool)
 
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1').split(',')
-
 
 # Application definition
 INSTALLED_APPS = [
@@ -63,7 +61,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'dynamic_form_project.wsgi.application'
 
-
 # Database (SQLite for Django admin/auth)
 DATABASES = {
     'default': {
@@ -95,7 +92,6 @@ else:
         'port': config('MONGODB_PORT', default=27017, cast=int),
     }
 
-
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -112,7 +108,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 LANGUAGE_CODE = 'en-us'
 
@@ -121,7 +116,6 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 
 USE_TZ = True
-
 
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = 'static/'
@@ -148,3 +142,7 @@ REST_FRAMEWORK = {
 # CORS settings
 CORS_ALLOW_ALL_ORIGINS = DEBUG
 CORS_ALLOW_CREDENTIALS = True
+
+NOCODB_TOKEN = config("NOCODB_TOKEN", defaut=None)
+NOCODB_URL = config("NOCODB_URL", default=None)
+NOCODB_BASE = config("NOCODB_BASE", default=None)

@@ -1,8 +1,15 @@
+from logging import getLogger
+
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from .models import ContentType, ContentTypeField
+from rest_framework.views import APIView
+
+from .models import ContentType
 from .serializers import ContentTypeSerializer, ContentTypeListSerializer
+from .sync_content_types import nocodb_tables_sync
+
+logger = getLogger(__name__)
 
 
 class ContentTypeViewSet(viewsets.ReadOnlyModelViewSet):
@@ -64,3 +71,28 @@ class ContentTypeViewSet(viewsets.ReadOnlyModelViewSet):
             schema['fields'].append(field_schema)
         
         return Response(schema)
+
+
+class ContentTypeSyncNocoView(APIView):
+    """
+    Sync content types with NocoDB
+    """
+
+    def post(self, request):
+        """Trigger sync with NocoDB"""
+        from noco import nocoapi
+
+        try:
+            nocodb_tables = nocoapi.get_nocodb_tables()
+            nocodb_tables_sync(nocodb_tables)
+            logger.info("NocoDB tables synced")
+            return Response(
+                {'message': 'Content types synced with NocoDB successfully'},
+                status=status.HTTP_200_OK
+            )
+        except Exception as e:
+            logger.error(e)
+            return Response(
+                {'error': str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
