@@ -143,6 +143,6 @@ REST_FRAMEWORK = {
 CORS_ALLOW_ALL_ORIGINS = DEBUG
 CORS_ALLOW_CREDENTIALS = True
 
-NOCODB_TOKEN = config("NOCODB_TOKEN", defaut=None)
+NOCODB_TOKEN = config("NOCODB_TOKEN", default=None)
 NOCODB_URL = config("NOCODB_URL", default=None)
 NOCODB_BASE = config("NOCODB_BASE", default=None)
